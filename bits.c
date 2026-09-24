@@ -33,7 +33,7 @@ int bitAnd(int x, int y) {
  */
 int bitXor(int x, int y) {
     int ans;
-    ans = (x & (~y)) | ((-x) & y); 
+    ans = ~(x & y ) & (~((~x) & (~y)) );//排除都为1,都为0的情况
     return ans;
 }
 
@@ -54,6 +54,11 @@ int bitXor(int x, int y) {
  *   1 if x and y have the same sign , 0 otherwise.
  */
 int samesign(int x, int y) {
+    if (!(x && y)){
+        if(x) return 0;
+        if(y) return 0;
+        return 1;
+    }
     int judge = 1;
     if( (x >> 31 ) ^ (y >> 31) ) judge = 0;
     return judge;
@@ -82,7 +87,11 @@ int logtwo(int v) {
  *    Difficulty: 2
  */
 int byteSwap(int x, int n, int m) {
-    return 2;
+    int byte_n = (x >> (n << 3)) & 0xFF;
+    int byte_m = (x >> (m << 3)) & 0xFF; //取m字节和n字节
+    int diff = byte_n ^ byte_m; //异或得到不同的位
+    int ans = x ^ (diff << (n << 3)) ^ (diff << (m << 3)); //将不同的位放回原来的位置
+    return ans;
 }
 
 /*
@@ -94,7 +103,13 @@ int byteSwap(int x, int n, int m) {
  *   Difficulty: 3
  */
 unsigned reverse(unsigned v) {
-    return 2;
+    unsigned ans = 0, i = 32;
+    while(i){
+        ans = (v & 1) | (ans << 1);
+        v = v >> 1;
+        i--;
+    }
+    return ans;
 }
 
 /*
