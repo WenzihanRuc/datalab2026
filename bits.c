@@ -74,7 +74,22 @@ int samesign(int x, int y) {
  *   Difficulty: 4
  */
 int logtwo(int v) {
-    return 2;
+    int ans,shift;
+    shift = ((v >> 16) > 0) << 4;//如果移动16位之后还有1在，那么至少是16次方，相当于1左4位
+    ans = shift;
+    v = v >> shift;
+    shift = ((v >> 8) > 0) << 3;
+    ans = ans | shift; //这里或运算和加法等效，因为每次shift都是2的幂次方
+    v = v >> shift;
+    shift = ((v >> 4) > 0) << 2;
+    ans = ans | shift;
+    v = v >> shift;
+    shift = ((v >> 2) > 0) << 1;
+    ans = ans | shift;
+    v = v >> shift;
+    shift = ((v >> 1) > 0);
+    ans = ans | shift;  
+    return ans;
 }
 
 /*
@@ -121,7 +136,11 @@ unsigned reverse(unsigned v) {
  *   Difficulty: 3
  */
 int logicalShift(int x, int n) {
-    return 2;
+    int ans;
+    ans = x >> n;
+    int mask = ~(((1 << 31) >> n) << 1); //制造1111···0000掩码，使得右移后高位补0；向左1个位置表示原符号位平移后数字不变
+    ans = ans & mask;
+    return ans;
 }
 
 /*
