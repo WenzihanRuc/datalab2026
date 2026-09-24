@@ -19,7 +19,9 @@
  * Difficulty: 1
  */
 int bitAnd(int x, int y) {
-    return 2;
+    int ans;
+    ans = ~(~x | ~y); //德摩根定律
+    return ans;
 }
 
 /*
@@ -30,7 +32,9 @@ int bitAnd(int x, int y) {
  *   Difficulty: 1
  */
 int bitXor(int x, int y) {
-    return 2;
+    int ans;
+    ans = (x & (~y)) | ((-x) & y); 
+    return ans;
 }
 
 /*
@@ -50,7 +54,9 @@ int bitXor(int x, int y) {
  *   1 if x and y have the same sign , 0 otherwise.
  */
 int samesign(int x, int y) {
-    return 2;
+    int judge = 1;
+    if( (x >> 31 ) ^ (y >> 31) ) judge = 0;
+    return judge;
 }
 
 /*
