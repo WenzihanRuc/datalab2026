@@ -152,7 +152,26 @@ int logicalShift(int x, int n) {
  *   Difficulty: 4
  */
 int leftBitCount(int x) {
-    return 2;
+    int ans = 0;
+    int check;
+    check =!(~(x>>16));//判断头16位是否全1
+    ans += check << 4;//如果全1，那么ans加16，否则加0
+    x = x << (check << 4);//x进行移动位置，若全1则删除这些前导，若不是则另加判断
+    check = !(~(x>>24));//判断头8位是否全1，注意这个时候头8位可能和最初x不一样，下同。
+    ans += check << 3;
+    x = x << (check << 3);
+    check = !(~(x>>28));
+    ans += check << 2;
+    x = x << (check << 2);
+    check = !(~(x>>30));
+    ans += check << 1;
+    x = x << (check << 1);
+    check = !(~(x>>31));
+    ans += check;
+    x = x << check;
+    check = !(~(x>>31));
+    ans += check;
+    return ans;
 }
 
 /*
@@ -164,7 +183,31 @@ int leftBitCount(int x) {
  *   Difficulty: 4
  */
 unsigned float_i2f(int x) {
-    return 2;
+    int sign = x & (1 << 31),num = 0;//符号位,num表示有效位数
+    if (x == 0) return 0;
+    if (x == 0x80000000) return 0xcf000000;
+    if (sign) x = ~x + 1;
+    int temp=x;
+    while(temp){
+        temp = temp >> 1;
+        num++;
+    }
+    int ans;
+    int storing = num;
+    if(num > 24){
+        int move = num - 24;
+        int tail=x & ((1 << move)-1);
+        int half=1 << (move-1);
+        x = x >> move;
+        if(tail > half) x = x + 1;//大于一半时进位
+        else if(tail == half){
+            if(x & 1) x = x + 1;
+        }//四舍六入，正好一半时向偶数舍入
+        num=24;
+    }
+    ans=sign + ((storing + 125)<<23) + (x << (24-num));
+    //符号位：sign；位码：num-1；有效位：x
+    return ans;
 }
 
 /*
@@ -179,7 +222,20 @@ unsigned float_i2f(int x) {
  *   Difficulty: 4
  */
 unsigned floatScale2(unsigned uf) {
-    return 2;
+    unsigned sign = uf >> 31;
+    unsigned exponent = (uf >> 23) & 0xFF;
+    unsigned fraction = uf & 0x7FFFFF;
+    if(exponent == 0xFF) return uf; //处理NaN和无穷大
+    if(exponent == 0){
+        if(fraction == 0) return uf; //处理0
+        if(fraction & 0x800000) exponent = 0x01;
+        fraction = fraction << 1;
+    }
+    else{
+        exponent += 1;
+        if(exponent == 0xFF) fraction = 0; //处理溢出为无穷大
+    }
+    return (sign << 31) | (exponent << 23) | fraction;
 }
 
 /*
@@ -196,7 +252,15 @@ unsigned floatScale2(unsigned uf) {
  *   Difficulty: 3
  */
 int float64_f2i(unsigned uf1, unsigned uf2) {
-    return 2;
+    int sign = uf2 >> 31;
+    int exponent = ((uf2 >> 20) & 0x7FF) - 1023; // 算阶码，去偏移
+    if (exponent < 0) return 0;
+    if (exponent >31) return 0x80000000; 
+    int ans = 1 << exponent; // 隐含的1
+    if (exponent <= 20) ans = ans + ((uf2 & 0xFFFFF) >> (20 - exponent));
+    else ans = ans + ((uf2 & 0xFFFFF) << (exponent - 20)) + (uf1 >> (52 - exponent));
+    if(sign) ans = ~ans + 1;
+    return ans;
 }
 
 /*
@@ -213,5 +277,12 @@ int float64_f2i(unsigned uf1, unsigned uf2) {
  *   Difficulty: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+    if(x > 127) return 0x7F800000; // +INF
+    if(x >= -126 && x <= 127){
+        return (x + 127) << 23; // 正常数
+    }
+    if(x >= -149){
+        return 1 << 22 >> (-127 - x);
+    }
+    else return 0;
 }
