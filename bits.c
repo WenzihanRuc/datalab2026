@@ -228,7 +228,6 @@ unsigned floatScale2(unsigned uf) {
     if(exponent == 0xFF) return uf; //处理NaN和无穷大
     if(exponent == 0){
         if(fraction == 0) return uf; //处理0
-        if(fraction & 0x800000) exponent = 0x01;
         fraction = fraction << 1;
     }
     else{
@@ -255,7 +254,7 @@ int float64_f2i(unsigned uf1, unsigned uf2) {
     int sign = uf2 >> 31;
     int exponent = ((uf2 >> 20) & 0x7FF) - 1023; // 算阶码，去偏移
     if (exponent < 0) return 0;
-    if (exponent >31) return 0x80000000; 
+    if (exponent >=31) return 0x80000000; 
     int ans = 1 << exponent; // 隐含的1
     if (exponent <= 20) ans = ans + ((uf2 & 0xFFFFF) >> (20 - exponent));
     else ans = ans + ((uf2 & 0xFFFFF) << (exponent - 20)) + (uf1 >> (52 - exponent));
